@@ -6,7 +6,7 @@ import javax.swing.*;
 import componentes.*;
 
 public class Main extends JFrame {
-  private final JFileChooser selector = new JFileChooser();
+  private final SelectorImagenes selector = new SelectorImagenes();
 
   public Main() {
     Container principal = getContentPane(); {
@@ -16,7 +16,7 @@ public class Main extends JFrame {
       JPanel controles = new JPanel(); {
         JButton boton = new JButton("Abrir");
         boton.addActionListener(a -> {
-          Utils.abrirImagen(this, selector).<Void>map(resultado -> {
+          selector.abrirImagen(this).<Void>map(resultado -> {
             resultado.match(
               visor.establecerImagen,
               error -> JOptionPane.showMessageDialog(

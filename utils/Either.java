@@ -14,7 +14,7 @@ public final class Either<L, R> {
 
   private Either(R right, Object tag) {
     if (tag != null)
-      throw new IllegalCallerException("Este constructor sólo debe ser llamado con null");
+      throw new IllegalArgumentException("Este constructor sólo debe ser llamado con null");
     isRight = true;
     this.right = right;
   }
