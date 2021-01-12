@@ -6,17 +6,20 @@ import javax.swing.*;
 import java.util.function.Consumer;
 
 /**
- * VisorImagenes
+ * Componente para visualizar una imagen y permitir su actualización
  */
 public class VisorImagenes {
   public static final int BORDE = 16;
   public static final int INCREMENTO_SCROLL = 10;
 
+  // Función para establecer la imagen
   public final Consumer<BufferedImage> establecerImagen;
+  // El componente que se debe agregar para mostrar la imagen
   public final Component componente;
 
   public VisorImagenes() {
     JScrollPane contenedorImagen = new JScrollPane();
+    // Permitir un desplazamiento más rápido
     contenedorImagen.getVerticalScrollBar().setUnitIncrement(INCREMENTO_SCROLL);
     contenedorImagen.getHorizontalScrollBar().setUnitIncrement(INCREMENTO_SCROLL);
     {

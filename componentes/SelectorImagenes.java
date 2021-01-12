@@ -12,7 +12,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 /**
- * SelectorImagenes
+ * Componente para la selección de archivos con los formatos deseados
  */
 public class SelectorImagenes extends JFileChooser {
   private static final String extensiones[] = new String[] { ".jpeg", ".jpg", ".bmp" };
@@ -38,6 +38,8 @@ public class SelectorImagenes extends JFileChooser {
     setAcceptAllFileFilterUsed(false);
   }
 
+  // Función para abrir una imagen
+  // Devuelve Optional.empty si se ha cancelado la operación
   public Optional<Either<ErrorImagen, BufferedImage>> abrirImagen(Component padre) {
     boolean seSeleccionoArchivo = showOpenDialog(padre) == JFileChooser.APPROVE_OPTION;
 

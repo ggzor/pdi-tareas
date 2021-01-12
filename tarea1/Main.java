@@ -5,10 +5,16 @@ import javax.swing.*;
 
 import componentes.*;
 
+/**
+ * La clase principal para la tarea 1
+ * */
 public class Main extends JFrame {
+  // Instanciar un componente selector de imágenes con filtro para
+  // los tipos de archivo soportados
   private final SelectorImagenes selector = new SelectorImagenes();
 
   public Main() {
+    // Creación de la interfaz de usuario principal
     Container principal = getContentPane(); {
       VisorImagenes visor = new VisorImagenes();
       principal.add(visor.componente, BorderLayout.CENTER);
@@ -16,6 +22,7 @@ public class Main extends JFrame {
       JPanel controles = new JPanel(); {
         JButton boton = new JButton("Abrir");
         boton.addActionListener(a -> {
+          // Manejo de la acción de abrir una imagen
           selector.abrirImagen(this).<Void>map(resultado -> {
             resultado.match(
               visor.establecerImagen,

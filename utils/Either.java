@@ -2,6 +2,13 @@ package utils;
 
 import java.util.function.Consumer;
 
+/**
+ * Tipo de datos algebraico para representar errores en funciones o
+ * métodos sin la necesidad de utilizar excepciones
+ *
+ * Básicamente es una clase para permitir dos tipos distintos como valor
+ * de retorno, pero de forma mutuamente exclusiva.
+ * */
 public final class Either<L, R> {
   private final boolean isRight;
   private L left = null;
@@ -19,6 +26,10 @@ public final class Either<L, R> {
     this.right = right;
   }
 
+  /**
+   * La única forma de acceder a los valores internos es utilizando esta
+   * función, manejando ambos casos
+   * */
   public void match(Consumer<R> rightAction, Consumer<L> leftAction) {
     if (isRight)
       rightAction.accept(right);

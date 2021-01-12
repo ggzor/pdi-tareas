@@ -1,5 +1,8 @@
 package imagenes;
 
+/**
+ * Representa un error al abrir una imagen a partir de un archivo
+ * */
 public enum ErrorImagen {
   NO_EXISTE("El archivo seleccionado no existe"),
   NO_SOPORTADO("El archivo contiene un formato de imagen no soportado"),

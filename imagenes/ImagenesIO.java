@@ -6,6 +6,9 @@ import java.io.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
+/**
+ * Clase con funciones de utilería para obtener imágenes a partir de archivos
+ * */
 public class ImagenesIO {
   public static Either<ErrorImagen, BufferedImage> abrirImagen(File archivo) {
     if (archivo == null)
@@ -25,6 +28,7 @@ public class ImagenesIO {
     }
   }
 
+  // Constructor privado para evitar instanciamiento
   private ImagenesIO() { }
 }
 
