@@ -10,7 +10,6 @@ import java.util.function.Consumer;
  */
 public class VisorImagenes {
   public static final int BORDE = 16;
-  public static final int INCREMENTO_SCROLL = 10;
 
   // Función para establecer la imagen
   public final Consumer<BufferedImage> establecerImagen;
@@ -18,10 +17,7 @@ public class VisorImagenes {
   public final Component componente;
 
   public VisorImagenes() {
-    JScrollPane contenedorImagen = new JScrollPane();
-    // Permitir un desplazamiento más rápido
-    contenedorImagen.getVerticalScrollBar().setUnitIncrement(INCREMENTO_SCROLL);
-    contenedorImagen.getHorizontalScrollBar().setUnitIncrement(INCREMENTO_SCROLL);
+    ScrollerPersonalizado contenedorImagen = new ScrollerPersonalizado();
     {
       JPanel contenido = new JPanel();
       contenido.setBorder(BorderFactory.createEmptyBorder(BORDE, BORDE, BORDE, BORDE));

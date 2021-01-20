@@ -6,19 +6,23 @@ set -euo pipefail
 
 if [[ $# -eq 0 ]]; then
   cat <<EOF
-No se proporcionó el número de tarea a ejecutar
+No se proporcionó la tarea a ejecutar
 
 Ejemplo:
-$ ./ejecutar_tarea.sh 1
+$ ./ejecutar_tarea.sh visor
 
-Ejecuta la tarea número 1
+Ejecuta la tarea visor
+
+Tareas disponibles:
+  - visor
 EOF
 
   exit 1
 fi
 
-ARCHIVO="tarea$1/Main.java"
-CLASE="tarea$1.Main"
+ARCHIVO="$1/Main.java"
+CLASE="$1.Main"
+CLASSPATH_EXTRA='./:lib/*'
 
 if [[ ! -f $ARCHIVO ]]; then
   echo "No existe la tarea $1 (aún?)"
@@ -26,5 +30,5 @@ if [[ ! -f $ARCHIVO ]]; then
 fi
 
 # Compilar y ejecutar
-javac "$ARCHIVO" && java "$CLASE"
+javac -cp "$CLASSPATH_EXTRA" "$ARCHIVO" && java -cp "$CLASSPATH_EXTRA" "$CLASE"
 
