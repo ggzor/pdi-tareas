@@ -3,7 +3,8 @@ package componentes;
 import java.awt.*;
 import java.awt.image.*;
 import javax.swing.*;
-import java.util.function.Consumer;
+
+import java.util.function.*;
 
 /**
  * Componente para visualizar una imagen y permitir su actualización
@@ -14,7 +15,7 @@ public class VisorImagenes {
   // Función para establecer la imagen
   public final Consumer<BufferedImage> establecerImagen;
   // El componente que se debe agregar para mostrar la imagen
-  public final Component componente;
+  public final JComponent componente;
 
   public VisorImagenes() {
     ScrollerPersonalizado contenedorImagen = new ScrollerPersonalizado();

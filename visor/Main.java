@@ -1,9 +1,17 @@
 package visor;
 
+import componentes.*;
+import imagenes.*;
+import utils.*;
+
 import java.awt.*;
+import java.awt.image.*;
 import javax.swing.*;
 
-import componentes.*;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.util.function.Consumer;
+
 
 /**
  * La clase principal para la tarea 1
@@ -15,6 +23,8 @@ public class Main extends JFrame {
   // Instanciar un componente selector de imágenes con filtro para
   // los tipos de archivo soportados
   private final SelectorImagenes selector = new SelectorImagenes();
+
+  private final ReactiveValue<BufferedImage> imagen = new ReactiveValue<>();
 
   public Main() {
     // Creación de la interfaz de usuario principal
@@ -33,14 +43,61 @@ public class Main extends JFrame {
       panelDerecha.agregarComponente.accept(histogramas.componente);
       principal.add(panelDerecha.componente, BorderLayout.EAST);
 
+      // Agregar menú
+      Runnable accionUmbralizar = () ->
+        new VentanaUmbralizacion(this, imagen.get()).setVisible(true);
+      JMenuBar menubar = new JMenuBar();
+      {
+        JMenu menu = new JMenu("Operaciones");
+        {
+          JMenuItem umbralizar = new JMenuItem("Umbralizar");
+          imagen.isPresent().subscribeRun(umbralizar::setEnabled);
+          umbralizar.addActionListener(ev -> accionUmbralizar.run());
+          menu.add(umbralizar);
+        }
+        menubar.add(menu);
+      }
+      this.setJMenuBar(menubar);
+
+      Consumer<BufferedImage> actualizarVisor = imagen ->
+        visor.establecerImagen.accept(
+            Operaciones.escalar(
+              imagen,
+              MathUtils.clamp(0.1, 1.0,
+                Geom.calcularEscalaAjuste(
+                  new Dimension(imagen.getWidth(), imagen.getHeight()),
+                  new Dimension(
+                    visor.componente.getWidth() - VisorImagenes.BORDE * 2,
+                    visor.componente.getHeight() - VisorImagenes.BORDE * 2
+                  )
+                )
+              )
+            )
+        );
+
+      imagen.subscribe(
+          actualizarVisor
+          .andThen(histogramas.establecerImagen)
+      );
+
+      new Thread(() -> {
+        try {
+          Thread.sleep(400);
+          SwingUtilities.invokeAndWait(() -> {
+            ImagenesIO.abrirImagen(new File("/home/ggzor/Scratch/test.jpg"))
+                      .match(imagen::set, err -> {});
+          });
+        } catch (InterruptedException ex) {}
+        catch (InvocationTargetException ex) {}
+      }).start();
+
       JPanel controles = new JPanel(); {
         JButton boton = new JButton("Abrir");
         boton.addActionListener(a -> {
           // Manejo de la acción de abrir una imagen
-          selector.abrirImagen(this).<Void>map(resultado -> {
+          selector.abrirImagen(this).map(resultado -> {
             resultado.match(
-              visor.establecerImagen
-                   .andThen(histogramas.establecerImagen),
+              imagen::set,
               error -> JOptionPane.showMessageDialog(
                 this, error.mensaje, "Error", JOptionPane.ERROR_MESSAGE)
             );
