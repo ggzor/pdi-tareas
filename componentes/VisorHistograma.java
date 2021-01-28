@@ -42,12 +42,9 @@ public class VisorHistograma {
           and(histogramaR.isPresent(), i < 3 ? esRGBR : esRGBR.map(b -> !b));
 
         // Escuchar los cambios
-        combineLatest(histogramaR, maximosIgualadosR)
-          .subscribe(p -> {
+        combineLatest(histogramaR, maximosIgualadosR,
+          (histogramaActual, estanMaximosIgualados) -> {
             if (histogramaVisible.get()) {
-              double[][] histogramaActual = p.primero;
-              boolean estanMaximosIgualados = p.segundo;
-
               histograma.componente.setPreferredSize(medidaGrafica);
               histograma.establecerValores.accept(
                   histogramaActual[iref % 3],
@@ -55,6 +52,8 @@ public class VisorHistograma {
                                         : Optional.empty()
               );
             }
+
+            return null;
           });
 
         // Visibilidad del histograma

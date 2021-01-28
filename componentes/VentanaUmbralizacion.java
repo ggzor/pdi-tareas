@@ -30,38 +30,35 @@ public class VentanaUmbralizacion extends VentanaDialogo {
 
     ReactiveValue<Integer> umbral = new ReactiveValue<>(255 / 2);
     ReactiveValue<Boolean> esManual = new ReactiveValue<>(false),
-                           esMonocromatica = new ReactiveValue<>(true);
+                           esMonocromatica = new ReactiveValue<>(true),
+                           invertir = new ReactiveValue<>(false);
 
     int umbralOtsu = InfoImagen.calcularUmbralOtsu(imagenBN.get());
 
     ReactiveValue<Function<BufferedImage, BufferedImage>> funcion =
-      combineLatest(
-      combineLatest(esManual, umbral), esMonocromatica)
-                        .map(p -> {
-                          boolean hacerManual = p.primero.primero;
-                          int umbralManual = p.primero.segundo;
-                          boolean monocromatica = p.segundo;
+      combineLatest(esManual, umbral, esMonocromatica, invertir,
+        (hacerManual, umbralManual, monocromatica, hacerInversion) -> {
+           return bi -> {
+             BufferedImage resultado = imagenBN.get();
 
-                          return bi -> {
-                            BufferedImage resultado = imagenBN.get();
+             int umbralAplicar = hacerManual
+                                 ? umbralManual
+                                 : umbralOtsu;
 
-                            int umbralAplicar = hacerManual
-                                                ? umbralManual
-                                                : umbralOtsu;
+             resultado = OperadoresPunto.umbralizar(resultado, umbralAplicar);
 
-                            resultado = OperadoresPunto.umbralizar(resultado, umbralAplicar);
+             if (hacerInversion)
+               resultado = OperadoresPunto.invertir(resultado);
 
-                            if (!monocromatica) {
-                              resultado = OperadoresPunto.enmascarar(bi, resultado);
-                            }
+             if (!monocromatica)
+               resultado = OperadoresPunto.enmascarar(bi, resultado);
 
-                            return resultado;
-                          };
-                        });
+             return resultado;
+           };
+         });
 
     ReactiveValue<BufferedImage> imagenModificada =
-      ReactiveValueUtils.combineLatest(imagen, funcion)
-                        .map(p -> p.segundo.apply(p.primero));
+      ReactiveValueUtils.combineLatest(imagen, funcion, (im, f) -> f.apply(im));
 
 
     // Para ajustar la escala al abrir la ventana
@@ -132,6 +129,10 @@ public class VentanaUmbralizacion extends VentanaDialogo {
               with(new JRadioButton("Sobre imagen original", esMonocromatica.get()))
                 .tap(grupoVisualizacion::add)
                 .onClick(() -> esMonocromatica.set(false))
+                .end(),
+              with(new JCheckBox("Invertir máscara"))
+                .tap(c -> invertir.subscribeRun(c::setSelected))
+                .onClick(() -> invertir.set(!invertir.get()))
                 .end()
             )
             .end()

@@ -1,6 +1,7 @@
 package imagenes;
 
 import java.awt.image.*;
+import java.io.BufferedReader;
 import java.util.function.Function;
 
 import utils.MathUtils;
@@ -95,6 +96,17 @@ public class OperadoresPunto {
 
       return valores;
     }, src.getType());
+  }
+
+  /**
+   * Realiza la inversión de la imagen que le es dada
+   * */
+  public static BufferedImage invertir(BufferedImage img) {
+    return aplicar(img, canales -> {
+      for (int i = 0; i < canales.length; i++)
+        canales[i] = 255 - canales[i];
+      return canales;
+    }, img.getType());
   }
 
   private OperadoresPunto() { }
