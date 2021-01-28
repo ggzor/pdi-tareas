@@ -8,44 +8,28 @@ import java.awt.image.*;
 public class Procesamiento {
 
   /**
-   * Crea el histograma de la imagen dada sin normalizar
+   * Interfaz para representar una operación sobre una imagen por pixel
    * */
-  public static double[][] crearHistograma(BufferedImage imagen) {
-    WritableRaster raster = imagen.getRaster();
-    int canales = raster.getNumBands();
-    double[][] histograma = new double[canales][];
-
-    for (int i = 0; i < canales; i++) {
-      histograma[i] = new double[256];
-    }
-
-    // Iterar por cada pixel por cada canal
-    for (int y = 0; y < raster.getHeight(); y++) {
-      for (int x = 0; x < raster.getWidth(); x++) {
-        for (int b = 0; b < canales; b++) {
-          int valor = raster.getSample(x, y, b);
-          histograma[b][valor]++;
-        }
-      }
-    }
-
-    return histograma;
+  @FunctionalInterface
+  public static interface OperadorPixel {
+    public void operar(int x, int y, int[] canales);
   }
 
   /**
-   * Crea el histograma y aplicar la normalización
+   * La función central de todas las operaciones que trabajan con imagenes
    * */
-  public static double[][] crearHistogramaNormalizado(BufferedImage imagen) {
-    double[][] histograma = crearHistograma(imagen);
-    double totalPixeles = (double)(imagen.getWidth() * imagen.getHeight());
+  public static void iterarPixeles(BufferedImage img, OperadorPixel f) {
+    int width = img.getWidth();
+    int height = img.getHeight();
+    WritableRaster raster = img.getRaster();
 
-    for (double[] canal : histograma) {
-      for (int i = 0; i < canal.length; i++) {
-        canal[i] /= totalPixeles;
+    int[] canales = new int[raster.getNumBands()];
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        raster.getPixel(x, y, canales);
+        f.operar(x, y, canales);
       }
     }
-
-    return histograma;
   }
 
   private Procesamiento() {}

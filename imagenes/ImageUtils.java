@@ -4,9 +4,9 @@ import java.awt.geom.*;
 import java.awt.image.*;
 
 /**
- * Operaciones
+ * Utilerías para mostrar imágenes en componentes
  */
-public class Operaciones {
+public class ImageUtils {
   public static final double ESCALA_EPSILON = 0.01;
 
   public static BufferedImage escalar(BufferedImage imagen, double escala) {
@@ -24,5 +24,5 @@ public class Operaciones {
     }
   }
 
-  private Operaciones() {}
+  private ImageUtils() {}
 }

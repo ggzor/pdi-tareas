@@ -2,6 +2,7 @@ package visor;
 
 import componentes.*;
 import imagenes.*;
+import reactive.*;
 import utils.*;
 
 import java.awt.*;
@@ -58,7 +59,7 @@ public class Main extends JFrame {
 
       Consumer<BufferedImage> actualizarVisor = imagen ->
         visor.establecerImagen.accept(
-            Operaciones.escalar(
+            ImageUtils.escalar(
               imagen,
               MathUtils.clamp(0.1, 1.0,
                 Geom.calcularEscalaAjuste(

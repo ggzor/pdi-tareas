@@ -30,5 +30,6 @@ if [[ ! -f $ARCHIVO ]]; then
 fi
 
 # Compilar y ejecutar
-javac -cp "$CLASSPATH_EXTRA" "$ARCHIVO" && java -cp "$CLASSPATH_EXTRA" "$CLASE"
+./limpiar.sh && javac -cp "$CLASSPATH_EXTRA" "$ARCHIVO" \
+             && java -cp "$CLASSPATH_EXTRA" "$CLASE"
 

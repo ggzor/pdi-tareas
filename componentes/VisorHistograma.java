@@ -1,17 +1,13 @@
 package componentes;
 
+import imagenes.InfoImagen;
+
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.awt.image.*;
+import javax.swing.*;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
-import imagenes.Procesamiento;
+import java.util.*;
+import java.util.function.*;
 
 /**
  * Clase para mostrar los diferentes histogramas de una imagen dependiendo si es RGB o
@@ -73,7 +69,7 @@ public class VisorHistograma {
     };
 
     establecerImagen = imagen -> {
-      histograma = Procesamiento.crearHistogramaNormalizado(imagen);
+      histograma = InfoImagen.crearHistogramaNormalizado(imagen);
 
       // Establecer visibilidad histogramas
       titulo.setVisible(true);

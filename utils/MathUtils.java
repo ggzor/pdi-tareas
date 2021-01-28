@@ -15,5 +15,7 @@ public class MathUtils {
     return Math.max(start, Math.min(value, end));
   }
 
+  /** Esta clase no se puede instanciar */
   private MathUtils() {}
+
 }

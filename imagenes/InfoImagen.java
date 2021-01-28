@@ -7,17 +7,58 @@ import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 
 /**
- * InfoImagen
+ * Funciones que sólamente calculan información de la imagen sin modificarla
  */
 public class InfoImagen {
 
+  /** Esta clase no se puede instanciar */
   private InfoImagen() { }
 
+  /**
+   * Crea el histograma de la imagen dada sin normalizar
+   * */
+  public static double[][] crearHistograma(BufferedImage img) {
+    int canales = img.getRaster().getNumBands();
+    double[][] histograma = new double[canales][];
+
+    for (int i = 0; i < canales; i++) {
+      histograma[i] = new double[256];
+    }
+
+    // Iterar por cada pixel por cada canal
+    Procesamiento.iterarPixeles(img, (x, y, valores) -> {
+      for (int b = 0; b < canales; b++) {
+        histograma[b][valores[b]]++;
+      }
+    });
+
+    return histograma;
+  }
+
+  /**
+   * Crea el histograma y aplicar la normalización
+   * */
+  public static double[][] crearHistogramaNormalizado(BufferedImage imagen) {
+    double[][] histograma = crearHistograma(imagen);
+    double totalPixeles = (double)(imagen.getWidth() * imagen.getHeight());
+
+    for (double[] canal : histograma) {
+      for (int i = 0; i < canal.length; i++) {
+        canal[i] /= totalPixeles;
+      }
+    }
+
+    return histograma;
+  }
+
+  /**
+   * Calcula el valor para la umbralización utilizando el algoritmo de Otsu
+   * */
   public static int calcularUmbralOtsu(BufferedImage imagen) {
     if (imagen.getRaster().getNumBands() != 1)
       throw new IllegalArgumentException("Sólo soporta imágenes de un canal");
 
-    double p[] = Procesamiento.crearHistogramaNormalizado(imagen)[0];
+    double p[] = crearHistogramaNormalizado(imagen)[0];
 
     double ros[] = new double[p.length];
     Arrays.fill(ros, Double.MIN_VALUE);

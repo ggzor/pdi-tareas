@@ -1,9 +1,11 @@
 package componentes;
 
-import static componentes.LayoutUtils.*;
+import gui.*;
+import static gui.DSL.*;
 import imagenes.*;
+import reactive.*;
+import static reactive.ReactiveValueUtils.*;
 import utils.*;
-import static utils.ReactiveValueUtils.*;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -23,7 +25,7 @@ public class VentanaUmbralizacion extends VentanaDialogo {
     // Lógica
     ReactiveValue<Double> escala = new ReactiveValue<>(1.0);
     ReactiveValue<BufferedImage>
-      imagen = escala.map(s -> Operaciones.escalar(imagenInicial, s)),
+      imagen = escala.map(s -> ImageUtils.escalar(imagenInicial, s)),
       imagenBN = imagen.map(im -> OperadoresPunto.blancoNegro(im, ModoBN.TV_GAMMA));
 
     ReactiveValue<Integer> umbral = new ReactiveValue<>(255 / 2);
