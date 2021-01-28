@@ -8,10 +8,7 @@ import java.awt.*;
 import java.awt.image.*;
 import javax.swing.*;
 
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.util.function.Consumer;
-
+import java.util.function.*;
 
 /**
  * La clase principal para la tarea 1
@@ -79,17 +76,6 @@ public class Main extends JFrame {
           actualizarVisor
           .andThen(histogramas.establecerImagen)
       );
-
-      new Thread(() -> {
-        try {
-          Thread.sleep(400);
-          SwingUtilities.invokeAndWait(() -> {
-            ImagenesIO.abrirImagen(new File("/home/ggzor/Scratch/test.jpg"))
-                      .match(imagen::set, err -> {});
-          });
-        } catch (InterruptedException ex) {}
-        catch (InvocationTargetException ex) {}
-      }).start();
 
       JPanel controles = new JPanel(); {
         JButton boton = new JButton("Abrir");
