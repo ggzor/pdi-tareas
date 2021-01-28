@@ -89,7 +89,7 @@ public class Main extends JFrame {
       new VentanaUmbralizacion(this, imagen.get()).setVisible(true);
     JMenuBar menubar = new JMenuBar();
     {
-      JMenu menu = new JMenu("Operaciones");
+      JMenu menu = new JMenu("Operadores punto");
       {
         JMenuItem umbralizar = new JMenuItem("Umbralizar");
         imagen.isPresent().subscribeRun(umbralizar::setEnabled);
