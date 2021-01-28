@@ -11,5 +11,9 @@ public class MathUtils {
     return Math.max(start, Math.min(value, end));
   }
 
+  public static int clamp(int start, int end, int value) {
+    return Math.max(start, Math.min(value, end));
+  }
+
   private MathUtils() {}
 }

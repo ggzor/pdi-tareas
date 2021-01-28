@@ -3,6 +3,7 @@ package componentes;
 import static componentes.LayoutUtils.*;
 import imagenes.*;
 import utils.*;
+import static utils.ReactiveValueUtils.*;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -14,33 +15,50 @@ import java.util.function.*;
  * VentanaUmbralizacion
  */
 public class VentanaUmbralizacion extends VentanaDialogo {
-  public VentanaUmbralizacion(JFrame padre, BufferedImage imagen)  {
+  public VentanaUmbralizacion(JFrame padre, BufferedImage imagenInicial)  {
     super(padre, true);
     centrarEnEscritorio();
     setTitle("Umbralización");
 
     // Lógica
+    ReactiveValue<Double> escala = new ReactiveValue<>(1.0);
+    ReactiveValue<BufferedImage>
+      imagen = escala.map(s -> Operaciones.escalar(imagenInicial, s)),
+      imagenBN = imagen.map(im -> OperadoresPunto.blancoNegro(im, ModoBN.TV_GAMMA));
+
     ReactiveValue<Integer> umbral = new ReactiveValue<>(255 / 2);
-    ReactiveValue<Boolean> esManual = new ReactiveValue<>(true),
-                           noEsManual = esManual.map(b -> !b),
+    ReactiveValue<Boolean> esManual = new ReactiveValue<>(false),
                            esMonocromatica = new ReactiveValue<>(true);
 
-    ReactiveValue<Function<BufferedImage, BufferedImage>> funcion =
-      ReactiveValueUtils.combineLatest(esManual, umbral)
-                        .map(p -> {
-                          boolean hacerManual = p.primero;
-                          int umbralManual = p.segundo;
+    int umbralOtsu = InfoImagen.calcularUmbralOtsu(imagenBN.get());
 
-                          return bi -> hacerManual
-                                  ? Operaciones.escalar(bi, 1.0 + (double)umbralManual / 255.0)
-                                  : Operaciones.escalar(bi, 0.5);
+    ReactiveValue<Function<BufferedImage, BufferedImage>> funcion =
+      combineLatest(
+      combineLatest(esManual, umbral), esMonocromatica)
+                        .map(p -> {
+                          boolean hacerManual = p.primero.primero;
+                          int umbralManual = p.primero.segundo;
+                          boolean monocromatica = p.segundo;
+
+                          return bi -> {
+                            BufferedImage resultado = imagenBN.get();
+
+                            int umbralAplicar = hacerManual
+                                                ? umbralManual
+                                                : umbralOtsu;
+
+                            resultado = OperadoresPunto.umbralizar(resultado, umbralAplicar);
+
+                            if (!monocromatica) {
+                              resultado = OperadoresPunto.enmascarar(bi, resultado);
+                            }
+
+                            return resultado;
+                          };
                         });
 
-    ReactiveValue<Double> escala = new ReactiveValue<>(1.0);
-    ReactiveValue<BufferedImage> imagenOriginal = escala.map(s -> Operaciones.escalar(imagen, s));
-
     ReactiveValue<BufferedImage> imagenModificada =
-      ReactiveValueUtils.combineLatest(imagenOriginal, funcion)
+      ReactiveValueUtils.combineLatest(imagen, funcion)
                         .map(p -> p.segundo.apply(p.primero));
 
 
@@ -48,9 +66,9 @@ public class VentanaUmbralizacion extends VentanaDialogo {
     Consumer<JComponent> ajustarEscalaAlAbrir =
       comp -> this.cuandoAbra(() -> escala.set(
         Geom.calcularEscalaAjuste(
-          new Dimension(imagen.getWidth(), imagen.getHeight()),
+          new Dimension(imagenInicial.getWidth(), imagenInicial.getHeight()),
           new Dimension(Math.max(50, comp.getWidth() - 2 * VisorImagenes.BORDE - 20),
-                        Integer.MAX_VALUE))
+                        Math.max(50, comp.getHeight() / 2 - 2 * VisorImagenes.BORDE - 50)))
     ));
 
     ButtonGroup grupoManual = new ButtonGroup(),
@@ -63,7 +81,7 @@ public class VentanaUmbralizacion extends VentanaDialogo {
           // Visualización de imagenes
           panel().uniformRows()
             .add(
-              crearVisorImagen("Original", imagenOriginal),
+              crearVisorImagen("Original", imagen),
               crearVisorImagen("Modificada", imagenModificada)
             )
             .tap(ajustarEscalaAlAbrir)
@@ -98,14 +116,21 @@ public class VentanaUmbralizacion extends VentanaDialogo {
                 )
                 .end(),
               // Controles para Otsu
-              with(new JRadioButton("Automática con Otsu", !esManual.get()))
+              with(new JRadioButton(
+                    String.format("Automática con Otsu (corte en %d)", umbralOtsu),
+                    !esManual.get()))
                 .tap(grupoManual::add)
                 .onClick(() -> esManual.set(false))
                 .end(),
               // Controles de la salida
-              new JLabel("Resultado:"),
+              with(new JLabel("Resultado:")).borderTop(10).end(),
               with(new JRadioButton("Monocromático", esMonocromatica.get()))
                 .tap(grupoVisualizacion::add)
+                .onClick(() -> esMonocromatica.set(true))
+                .end(),
+              with(new JRadioButton("Sobre imagen original", esMonocromatica.get()))
+                .tap(grupoVisualizacion::add)
+                .onClick(() -> esMonocromatica.set(false))
                 .end()
             )
             .end()

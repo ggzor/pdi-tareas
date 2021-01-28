@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 
 import utils.ReactiveValue;
 
@@ -78,6 +79,17 @@ public class LayoutUtils {
         BorderFactory.createEmptyBorder(top, left, bottom, right));
 
       return self();
+    }
+
+    public Self borderTop(int top) {
+      Insets original;
+
+      if (value.getBorder() != null)
+        original = value.getBorder().getBorderInsets(value);
+      else
+        original = new Insets(0, 0, 0, 0);
+
+      return border(top, original.left, original.bottom, original.right);
     }
 
     public Self tap(Consumer<? super T> action) {
