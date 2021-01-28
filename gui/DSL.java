@@ -26,15 +26,34 @@ public class DSL {
     return new ComponentBuilder<>(component);
   }
 
-  public static JLabel reactiveLabel(ReactiveValue<String> value) {
-    String inicial = value.get();
+  public static ComponentBuilder<JLabel> label(String text) {
+    return with(new JLabel(text));
+  }
+
+  public static ComponentBuilder<JLabel> label(ReactiveValue<String> text) {
+    String inicial = text.get();
     if (inicial == null)
       inicial = "";
 
     JLabel label = new JLabel(inicial);
-    value.subscribe(label::setText);
+    text.subscribe(label::setText);
 
-    return label;
+    return with(label);
+  }
+
+  public static ButtonBuilder<JButton> button(String text) {
+    return with(new JButton(text));
+  }
+
+  public static ButtonBuilder<JButton> button(ReactiveValue<String> text) {
+    String inicial = text.get();
+    if (inicial == null)
+      inicial = "";
+
+    JButton button = new JButton(inicial);
+    text.subscribe(button::setText);
+
+    return with(button);
   }
 
   private DSL() {}

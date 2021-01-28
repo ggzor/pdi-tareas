@@ -102,9 +102,8 @@ public class VentanaUmbralizacion extends VentanaDialogo {
               vpanel().border(10, 20, 10, 10)
                 .children(Align.LEFT::apply)
                 .add(
-                  reactiveLabel(
-                    umbral.map(value -> String.format("Umbral: %d", value))
-                  ),
+                  label(umbral.map(value -> String.format("Umbral: %d", value)))
+                    .end(),
                   with(new JSlider(JSlider.HORIZONTAL, 0, 255, umbral.get()))
                     .tap(s -> {
                       s.setMajorTickSpacing(50);

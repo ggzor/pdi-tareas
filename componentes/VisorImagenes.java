@@ -1,6 +1,7 @@
 package componentes;
 
-import java.awt.*;
+import static gui.DSL.*;
+
 import java.awt.image.*;
 import javax.swing.*;
 
@@ -13,27 +14,27 @@ public class VisorImagenes {
   public static final int BORDE = 16;
 
   // Función para establecer la imagen
-  public final Consumer<BufferedImage> establecerImagen;
+  public Consumer<BufferedImage> establecerImagen;
   // El componente que se debe agregar para mostrar la imagen
   public final JComponent componente;
 
   public VisorImagenes() {
-    ScrollerPersonalizado contenedorImagen = new ScrollerPersonalizado();
-    {
-      JPanel contenido = new JPanel();
-      contenido.setBorder(BorderFactory.createEmptyBorder(BORDE, BORDE, BORDE, BORDE));
-      contenido.setLayout(new GridBagLayout());
-      {
-        JLabel label = new JLabel();
-        establecerImagen = imagen -> label.setIcon(new ImageIcon(imagen));
-
-        contenido.add(label);
-      }
-
-      contenedorImagen.setViewportView(contenido);
-    }
-
-    componente = contenedorImagen;
+    componente =
+      panel()
+        .add(
+          panel().border(BORDE)
+            .add(
+              with(new JLabel())
+                .tap(l -> {
+                  establecerImagen = imagen -> l.setIcon(new ImageIcon(imagen));
+                })
+                .end()
+            )
+            .end()
+        )
+        .gridBag()
+        .scrollable()
+        .end();
   }
 }
 

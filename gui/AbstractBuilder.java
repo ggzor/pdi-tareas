@@ -3,6 +3,8 @@ package gui;
 import java.awt.*;
 import javax.swing.*;
 
+import reactive.ReactiveValue;
+
 import java.util.*;
 import java.util.function.*;
 
@@ -12,11 +14,65 @@ import java.util.function.*;
  * */
 public abstract class AbstractBuilder<Self extends AbstractBuilder<Self, T>
                                      , T extends JComponent> {
+
+  public static final int INCREMENTO_SCROLL = 10;
+
   protected final T value;
   protected final ArrayList<Consumer<JComponent>> hooks = new ArrayList<>();
 
   public AbstractBuilder(T component) {
     this.value = component;
+  }
+
+  public Self pwidth(int width) {
+    value.setPreferredSize(new Dimension(width, value.getPreferredSize().height));
+    return self();
+  }
+
+  public Self pheight(int height) {
+    value.setPreferredSize(new Dimension(value.getPreferredSize().width, height));
+    return self();
+  }
+
+  public ComponentBuilder<JScrollPane> scrollable() {
+    JScrollPane scroller = new JScrollPane();
+    scroller.setViewportView(value);
+
+    // Ajustar desplazamiento
+    scroller.getVerticalScrollBar().setUnitIncrement(INCREMENTO_SCROLL);
+    scroller.getHorizontalScrollBar().setUnitIncrement(INCREMENTO_SCROLL);
+
+    return DSL.with(scroller);
+  }
+
+  public Self addSouth(JComponent component) {
+    value.add(component, BorderLayout.SOUTH);
+    return self();
+  }
+
+  public Self addEast(JComponent component) {
+    value.add(component, BorderLayout.EAST);
+    return self();
+  }
+
+  public Self addCenter(JComponent component) {
+    value.add(component, BorderLayout.CENTER);
+    return self();
+  }
+
+  public Self visibleWhen(ReactiveValue<Boolean> visible) {
+    visible.subscribeRunOpt(opt -> value.setVisible(opt.orElse(true)));
+    return self();
+  }
+
+  public Self gridBag() {
+    value.setLayout(new GridBagLayout());
+    return self();
+  }
+
+  public Self borderLayout() {
+    value.setLayout(new BorderLayout());
+    return self();
   }
 
   public Self boxY() {
@@ -39,6 +95,11 @@ public abstract class AbstractBuilder<Self extends AbstractBuilder<Self, T>
 
   public Self children(Consumer<JComponent> hook) {
     hooks.add(hook);
+    return self();
+  }
+
+  public Self alignCenterX() {
+    value.setAlignmentX(Component.CENTER_ALIGNMENT);
     return self();
   }
 

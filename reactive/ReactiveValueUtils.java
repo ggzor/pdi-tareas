@@ -28,4 +28,8 @@ public class ReactiveValueUtils {
   }
 
   private ReactiveValueUtils() {}
+
+  public static ReactiveValue<Boolean> and(ReactiveValue<Boolean> a, ReactiveValue<Boolean> b) {
+    return combineLatest(a, b).map(bs -> bs.primero && bs.segundo);
+  }
 }
