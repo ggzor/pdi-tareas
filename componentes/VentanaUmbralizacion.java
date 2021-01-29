@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.image.*;
 import javax.swing.*;
 
+import java.util.Optional;
 import java.util.function.*;
 
 /**
@@ -61,14 +62,20 @@ public class VentanaUmbralizacion extends VentanaDialogo {
       ReactiveValueUtils.combineLatest(imagen, funcion, (im, f) -> f.apply(im));
 
 
+    ReactiveValue<Void> ajustarEscala = new ReactiveValue<>();
     // Para ajustar la escala al abrir la ventana
     Consumer<JComponent> ajustarEscalaAlAbrir =
-      comp -> this.cuandoAbra(() -> escala.set(
-        Geom.calcularEscalaAjuste(
-          new Dimension(imagenInicial.getWidth(), imagenInicial.getHeight()),
-          new Dimension(Math.max(50, comp.getWidth() - 2 * VisorImagenes.BORDE - 20),
-                        Math.max(50, comp.getHeight() / 2 - 2 * VisorImagenes.BORDE - 50)))
-    ));
+      comp -> {
+        Runnable ajustarImagenes = () -> escala.set(
+          Geom.calcularEscalaAjuste(
+            new Dimension(imagenInicial.getWidth(), imagenInicial.getHeight()),
+            new Dimension(Math.max(50, comp.getWidth() - 2 * VisorImagenes.BORDE - 20),
+                          Math.max(50, comp.getHeight() / 2 - 2 * VisorImagenes.BORDE - 50)))
+        );
+
+        this.cuandoAbra(ajustarImagenes);
+        ajustarEscala.subscribeOpt(v -> ajustarImagenes.run());
+      };
 
     ButtonGroup grupoManual = new ButtonGroup(),
                 grupoVisualizacion = new ButtonGroup();
@@ -131,8 +138,12 @@ public class VentanaUmbralizacion extends VentanaDialogo {
                 .onClick(() -> esMonocromatica.set(false))
                 .end(),
               with(new JCheckBox("Invertir máscara"))
+                .border(10, 0)
                 .tap(c -> invertir.subscribeRun(c::setSelected))
                 .onClick(() -> invertir.set(!invertir.get()))
+                .end(),
+              button("Ajustar escala")
+                .onClick(() -> ajustarEscala.setOpt(Optional.empty()))
                 .end()
             )
             .end()

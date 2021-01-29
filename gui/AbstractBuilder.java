@@ -112,6 +112,10 @@ public abstract class AbstractBuilder<Self extends AbstractBuilder<Self, T>
     return self().border(allBorders, allBorders, allBorders, allBorders);
   }
 
+  public Self border(int vertical, int horizontal) {
+    return self().border(vertical, horizontal, vertical, horizontal);
+  }
+
   public Self border(int top, int left, int bottom, int right) {
     value.setBorder(
       BorderFactory.createEmptyBorder(top, left, bottom, right));

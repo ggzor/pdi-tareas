@@ -23,7 +23,7 @@ public class VentanaDialogo extends JDialog {
 
   public void centrarEnEscritorio() {
     Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-    setSize(new Dimension(screen.width / 3, screen.height / 2));
+    setSize(new Dimension(screen.width / 2, screen.height / 2));
     setLocationRelativeTo(null);
     setTitle("Umbralización");
   }
