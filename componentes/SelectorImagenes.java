@@ -26,7 +26,7 @@ public class SelectorImagenes extends JFileChooser {
           return true;
 
         return Arrays.stream(extensiones)
-                     .anyMatch(ext -> f.getName().endsWith(ext));
+                     .anyMatch(ext -> f.getName().toLowerCase().endsWith(ext));
       }
 
       @Override
