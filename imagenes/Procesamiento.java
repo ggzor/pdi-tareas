@@ -1,6 +1,7 @@
 package imagenes;
 
 import java.awt.image.*;
+import java.util.function.*;
 
 /**
  * Clase principal para realizar el procesamiento de una imagen
@@ -30,6 +31,19 @@ public class Procesamiento {
         f.operar(x, y, canales);
       }
     }
+  }
+
+  public static BufferedImage
+    generarImagen(int ancho, int alto, int tipo, Consumer<int[]> generadorCanales) {
+    BufferedImage resultado = new BufferedImage(ancho, alto, tipo);
+    WritableRaster raster = resultado.getRaster();
+
+    iterarPixeles(resultado, (x, y, canales) -> {
+      generadorCanales.accept(canales);
+      raster.setPixel(x, y, canales);
+    });
+
+    return resultado;
   }
 
   private Procesamiento() {}

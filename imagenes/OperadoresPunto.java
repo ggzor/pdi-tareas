@@ -1,8 +1,8 @@
 package imagenes;
 
 import java.awt.image.*;
-import java.io.BufferedReader;
 import java.util.function.Function;
+import java.util.function.IntUnaryOperator;
 
 import utils.MathUtils;
 
@@ -19,6 +19,14 @@ public class OperadoresPunto {
   @FunctionalInterface
   public static interface OperadorPixel {
     public int[] operar(int x, int y, int[] canales);
+  }
+
+  /**
+   * Aplicar un operador a todos los canales dadas las coordenadas
+   * */
+  @FunctionalInterface
+  public static interface OperadorPixelMonoCanal {
+    public int operar(int x, int y, int valor);
   }
 
   /**
@@ -43,17 +51,26 @@ public class OperadoresPunto {
   }
 
   /**
+   * Función para aplicar una operación en todos los canales de una imagen
+   * */
+  public static BufferedImage aplicarMulticanal(BufferedImage src, OperadorPixelMonoCanal f) {
+    return aplicar(src, (x, y, canales) -> {
+      for (int i = 0; i < canales.length; i++) {
+        canales[i] = f.operar(x, y, canales[i]);
+      }
+      return canales;
+    }, src.getType());
+  }
+
+  public static BufferedImage aplicarMulticanal(BufferedImage src, IntUnaryOperator f) {
+    return aplicarMulticanal(src, (x, y, v) -> f.applyAsInt(v));
+  }
+
+  /**
    * Operador de umbralización uniforme en todos sus canales
    * */
-  public static BufferedImage umbralizar(BufferedImage imagen, int corte) {
-    int[] valores = new int[imagen.getRaster().getNumBands()];
-
-    return aplicar(imagen, canales -> {
-      for (int i = 0; i < canales.length; i++) {
-        valores[i] = canales[i] < corte ? 0 : 255;
-      }
-      return valores;
-    }, imagen.getType());
+  public static BufferedImage umbralizar(BufferedImage src, int corte) {
+    return aplicarMulticanal(src, valor -> valor < corte ? 0 : 255);
   }
 
   /**
@@ -101,12 +118,89 @@ public class OperadoresPunto {
   /**
    * Realiza la inversión de la imagen que le es dada
    * */
-  public static BufferedImage invertir(BufferedImage img) {
-    return aplicar(img, canales -> {
-      for (int i = 0; i < canales.length; i++)
-        canales[i] = 255 - canales[i];
-      return canales;
-    }, img.getType());
+  public static BufferedImage invertir(BufferedImage src) {
+    return aplicarMulticanal(src, valor -> 255 - valor);
+  }
+
+  public static BufferedImage exponenciar(BufferedImage src, double exp) {
+    return aplicarMulticanal(src, valor ->
+        MathUtils.clamp(0, 255, (int)(
+            Math.pow(valor, exp)
+        )));
+  }
+
+  public static BufferedImage gamma(BufferedImage src, double exp) {
+    return aplicarMulticanal(src,
+        valor -> MathUtils.clamp(0, 255, (int)(255 * Math.pow(valor / 255.0, exp))));
+  }
+
+  public static BufferedImage seno(BufferedImage src, double k) {
+    return aplicarMulticanal(src,
+        valor -> MathUtils.clamp(0, 255, (int)(
+            k * 255.0 * Math.sin(Math.PI / 510.0 * valor)
+        )));
+  }
+
+  public static BufferedImage brillo(BufferedImage src, double b) {
+    return aplicarMulticanal(src,
+        valor -> MathUtils.clamp(0, 255, (int)(
+            valor + b
+        )));
+  }
+
+  public static BufferedImage contraste(BufferedImage src, double a) {
+    return aplicarMulticanal(src,
+        valor -> MathUtils.clamp(0, 255, (int)(
+            valor * a
+        )));
+  }
+
+  public static BufferedImage sigmoide(BufferedImage src, double a) {
+    return aplicarMulticanal(src,
+        valor -> MathUtils.clamp(0, 255, (int)(
+            127.5 * (1 + Math.tanh(a * (valor - 127.5)))
+        )));
+  }
+
+  public static BufferedImage diferencias(BufferedImage src, int umbral) {
+    int resultado[] = new int[1];
+    return aplicar(src, canales -> {
+      int dif = (canales[0] - canales[1]) + (canales[1] - canales[2]);
+      resultado[0] = dif < umbral ? 0 : 255;
+      return resultado;
+    }, BufferedImage.TYPE_BYTE_GRAY);
+  }
+
+  public static BufferedImage separarRGB(BufferedImage src, int umbral) {
+    int resultado[] = new int[1];
+    return aplicar(src, canales -> {
+      int dif = canales[0] + canales[1] + canales[2];
+      resultado[0] = dif < umbral * 3 ? 0 : 255;
+      return resultado;
+    }, BufferedImage.TYPE_BYTE_GRAY);
+  }
+
+  public static BufferedImage diff(BufferedImage src, BufferedImage src2) {
+    WritableRaster wr = src2.getRaster();
+    return aplicarMulticanal(src, (x, y, valor) -> {
+      int valor2 = wr.getSample(x, y, 0);
+      return Math.max(0, valor - valor2);
+    });
+  }
+
+  public static BufferedImage constant(BufferedImage ref, int value) {
+    int valueArr[] = new int[]{value};
+    return OperadoresPunto.aplicar(ref,
+                                   vignore -> valueArr,
+                                   BufferedImage.TYPE_BYTE_GRAY);
+  }
+
+  public static BufferedImage white(BufferedImage ref) {
+    return constant(ref, 255);
+  }
+
+  public static BufferedImage black(BufferedImage ref) {
+    return constant(ref, 0);
   }
 
   private OperadoresPunto() { }
