@@ -40,7 +40,7 @@ public class Main extends JFrame {
 
   private static String leerArchivo(String archivo) {
     try {
-      return Files.readString(Paths.get(archivo));
+      return new String(Files.readAllBytes(Paths.get(archivo)));
     } catch (IOException ex) {
       return "";
     }
@@ -48,7 +48,7 @@ public class Main extends JFrame {
 
   private static void escribirArchivo(String archivo, String contenido) {
     try {
-      Files.writeString(Paths.get(archivo), contenido);
+      Files.write(Paths.get(archivo), contenido.getBytes());
     } catch (IOException ex) {
       System.err.println("No se pudo escribir el archivo: " + archivo);
     }
