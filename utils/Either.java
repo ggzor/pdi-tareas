@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Tipo de datos algebraico para representar errores en funciones o
@@ -43,5 +44,12 @@ public final class Either<L, R> {
 
   public static <L, R> Either<L, R> right(R right) {
     return new Either<L, R>(right, null);
+  }
+
+  public <T> T either(Function<R, T> r, Function<L, T> l) {
+    if (isRight)
+      return r.apply(right);
+    else
+      return l.apply(left);
   }
 }
