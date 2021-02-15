@@ -5,6 +5,8 @@ import static gui.DSL.*;
 import java.awt.image.*;
 import javax.swing.*;
 
+import reactive.ReactiveValue;
+
 import java.util.function.*;
 
 /**
@@ -30,6 +32,23 @@ public class VisorImagenes {
                 })
                 .end()
             )
+            .end()
+        )
+        .gridBag()
+        .scrollable()
+        .end();
+  }
+
+  public static JComponent de(ReactiveValue<BufferedImage> imagen) {
+    return
+      panel()
+        .add(
+          panel().border(BORDE)
+            .add(with(new JLabel())
+                   .tap(l -> imagen.subscribeRunOpt(
+                          opt -> opt.ifPresent(
+                            im -> l.setIcon(new ImageIcon(im)))))
+                   .end())
             .end()
         )
         .gridBag()
