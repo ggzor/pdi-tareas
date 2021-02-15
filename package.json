@@ -1,0 +1,29 @@
+{
+  "name": "pdi",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "babel builtins.src.js -o builtins.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ggzor/pdi-tareas.git"
+  },
+  "keywords": [],
+  "author": "ggzor",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ggzor/pdi-tareas/issues"
+  },
+  "homepage": "https://github.com/ggzor/pdi-tareas#readme",
+  "dependencies": {
+    "@babel/cli": "^7.12.13",
+    "@babel/core": "^7.12.13",
+    "@babel/preset-env": "^7.12.13",
+    "core-js": "^3.8.3"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  }
+}
