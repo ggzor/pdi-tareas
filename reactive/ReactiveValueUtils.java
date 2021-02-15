@@ -5,6 +5,8 @@ import utils.*;
 import java.util.*;
 import java.util.function.*;
 
+import javax.swing.Timer;
+
 /**
  * ReactiveValueUtils
  */
@@ -85,5 +87,52 @@ public class ReactiveValueUtils {
 
   public static ReactiveValue<Boolean> and(ReactiveValue<Boolean> a, ReactiveValue<Boolean> b) {
     return combineLatest(a, b).map(bs -> bs.primero && bs.segundo);
+  }
+
+  private static class DistinctReactiveValue<T> extends ReactiveValue<T> {
+    private Optional<T> previous = Optional.empty();
+    public DistinctReactiveValue(ReactiveValue<T> base) {
+      base.subscribeOpt(v -> {
+        v.flatMap(vnew ->
+            previous.map(vprevious ->
+              Objects.equals(vnew, vprevious)
+                ? Optional.<T>empty()
+                : Optional.of(vnew)
+            )
+              .orElse(Optional.of(vnew))
+        ).ifPresent(vnew -> {
+          previous = Optional.of(vnew);
+          set(vnew);
+        });
+      });
+    }
+  }
+
+  public static <T> ReactiveValue<T> distinctUntilChanged(ReactiveValue<T> value) {
+    return new DistinctReactiveValue<T>(value);
+  }
+
+  public static <T> ReactiveValue<T> debounce(int milis, ReactiveValue<T> value) {
+    ReactiveValue<T> result = new ReactiveValue<>();
+    Stack<T> box = new Stack<>();
+
+    Timer t = new Timer(milis, ev -> {
+      if (!box.isEmpty()) {
+        result.set(box.pop());
+      }
+    });
+
+    value.subscribeRunOpt(opt -> {
+      if (opt.isPresent()) {
+        t.stop();
+
+        box.clear();
+        box.push(opt.get());
+
+        t.start();
+      }
+    });
+
+    return result;
   }
 }

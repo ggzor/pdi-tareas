@@ -95,6 +95,12 @@ public class ReactiveValue<T> {
     return newReactiveValue;
   }
 
+  public ReactiveValue<Optional<T>> asOpt() {
+    ReactiveValue<Optional<T>> newValue = new ReactiveValue<>();
+    this.subscribeRunOpt(newValue::set);
+    return newValue;
+  }
+
   // Propiedad reactiva para verificar cuando es haya establecido un valor
   public ReactiveValue<Boolean> isPresent() {
     return this.mapOpt(Optional::isPresent);
