@@ -15,6 +15,7 @@ Ejecuta la tarea visor
 
 Tareas disponibles:
   - visor
+  - script
 EOF
 
   exit 1
@@ -29,7 +30,9 @@ if [[ ! -f $ARCHIVO ]]; then
   exit 1
 fi
 
-# Compilar y ejecutar
-./limpiar.sh && javac -cp "$CLASSPATH_EXTRA" "$ARCHIVO" \
-             && java -cp "$CLASSPATH_EXTRA" "$CLASE"
+# Compilar
+find -type f -name '*.java' | xargs javac -cp "$CLASSPATH_EXTRA"
+
+# Ejecutar
+java -cp "$CLASSPATH_EXTRA" "$CLASE"
 
