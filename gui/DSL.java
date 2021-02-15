@@ -14,6 +14,10 @@ public class DSL {
     return with(new JPanel());
   }
 
+  public static ComponentBuilder<JPanel> hpanel() {
+    return panel().boxX();
+  }
+
   public static ComponentBuilder<JPanel> vpanel() {
     return panel().boxY();
   }
@@ -54,6 +58,14 @@ public class DSL {
     text.subscribe(button::setText);
 
     return with(button);
+  }
+
+  public static JSliderBuilder slider(int min, int max, int value) {
+    return new JSliderBuilder(new JSlider()).limits(min, max).value(value);
+  }
+
+  public static JComponent gap(int size) {
+    return panel().border(size, size, 0, 0).end();
   }
 
   private DSL() {}

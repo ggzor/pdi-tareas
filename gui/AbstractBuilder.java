@@ -75,6 +75,11 @@ public abstract class AbstractBuilder<Self extends AbstractBuilder<Self, T>
     return self();
   }
 
+  public Self boxX() {
+    value.setLayout(new BoxLayout(value, BoxLayout.X_AXIS));
+    return self();
+  }
+
   public Self boxY() {
     value.setLayout(new BoxLayout(value, BoxLayout.Y_AXIS));
     return self();
