@@ -1,9 +1,10 @@
+// Primer paso: eliminación de piel y esclerótica
 var $brillo = $a * 255;
 var $contraste = $b * 3.0;
 var $sigmoide = $c * 0.2;
 
 // prettier-ignore
-var ops = pipe(
+var ops1 = pipe(
   bn,
   brillo($brillo),
   contraste($contraste),
@@ -11,55 +12,37 @@ var ops = pipe(
   sigmoide($sigmoide),
   inv
 );
+var mask1 = ops1($imagen);
+var img1 = enmascarar(mask1, $imagen);
+
+// Segundo paso: Manipulación en el espacio de colores RGB
+$d *= 255;
+var pestañas_finas = diferencias($d, img1);
+
+$e *= 10;
+var pupila = inv(diferencias($e, img1));
 
 $f *= 255;
-var brillos = invertir(umb($f, invertir(bn($imagen))));
+var regiones_oscuras = separarRGB($f, img1);
 
-var mask = ops($imagen);
-// brillos
-var im = enmascarar(mask, $imagen);
+// prettier-ignore
+var opsRGB = pipe(
+  diff(regiones_oscuras),
+  diff(pestañas_finas),
+  diff(pupila)
+)
 
-$z *= 255;
-var pestañas = diferencias($z, im);
-pestañas;
-mask;
+var maskRGB = opsRGB(mask1);
 
-$y *= 255;
-var mask2 = separarRGB($y, im);
+// Tercer paso: Manipulación en el espacio de colores HSL
+$g *= 1.0;
+$h += 1.0;
+var maskHSL = umbralizacionHSLPorS($imagen, $g, $h);
 
-diferencias($z, enmascarar(mask2, im));
-mask2;
+// Combinación final de las máscaras
+var maskFinal = interseccion(maskHSL, maskRGB);
+// Generación de la imagen final
+var imgFinal = enmascarar(maskFinal, $imagen);
 
-var canalesRGB = separarCanales($imagen);
-
-$p *= 2;
-var pupila = sig($q, exp($p, canalesRGB[0]));
-
-var maskRGB = diff(pestañas, diff(mask2, mask));
-
-var canales = separarCanales(convertirHSL($imagen));
-$o *= 2;
-
-$t = $t + 1.0;
-var S = exp($t, canales[1]);
-
-$w += 1.0;
-print($x);
-print($y);
-
-var maskHSL = umbralizacionHSLPorS($imagen, $x, $w);
-maskHSL;
-maskRGB;
-interseccion(maskHSL, maskRGB);
-
-var sinBrillos = enmascarar(inv(brillos), $imagen);
-sinBrillos;
-
-var ModoBN = Java.type("imagenes.ModoBN");
-var negros = blancoNegro(ModoBN.PROMEDIO, $imagen);
-$j *= 255;
-$i += 1;
-umb($j, exp($i, separarCanales($imagen)[2]));
-var finalMask = interseccion(maskHSL, maskRGB);
-
-enmascarar(finalMask, $imagen);
+// Lo que se muestra en pantalla
+imgFinal;
