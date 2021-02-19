@@ -34,7 +34,6 @@ public class Main extends JFrame {
   private static final String SCRIPT_FILE = "script.js";
   private static final String BUILTINS_FILE = "builtins.js";
   private static final String VARS_FILE = "vars.txt";
-  private static final String IMAGEN_FILE = "resources/IMG_001_L_3.JPG";
 
   private JComponent comp;
 
