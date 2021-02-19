@@ -66,6 +66,10 @@ public class OperadoresPunto {
     return aplicarMulticanal(src, (x, y, v) -> f.applyAsInt(v));
   }
 
+  public static BufferedImage aplicarMulticanalRestringido(BufferedImage src, IntUnaryOperator f) {
+    return aplicarMulticanal(src, v -> MathUtils.clamp(0, 255, f.applyAsInt(v)));
+  }
+
   /**
    * Operador de umbralización uniforme en todos sus canales
    * */
@@ -123,43 +127,39 @@ public class OperadoresPunto {
   }
 
   public static BufferedImage exponenciar(BufferedImage src, double exp) {
-    return aplicarMulticanal(src, valor ->
-        MathUtils.clamp(0, 255, (int)(
-            Math.pow(valor, exp)
-        )));
+    return aplicarMulticanalRestringido(src, valor ->
+             (int)Math.pow(valor, exp)
+           );
   }
 
   public static BufferedImage gamma(BufferedImage src, double exp) {
-    return aplicarMulticanal(src,
-        valor -> MathUtils.clamp(0, 255, (int)(255 * Math.pow(valor / 255.0, exp))));
+    return aplicarMulticanalRestringido(src, valor ->
+             (int)(255 * Math.pow(valor / 255.0, exp))
+           );
   }
 
   public static BufferedImage seno(BufferedImage src, double k) {
-    return aplicarMulticanal(src,
-        valor -> MathUtils.clamp(0, 255, (int)(
-            k * 255.0 * Math.sin(Math.PI / 510.0 * valor)
-        )));
+    return aplicarMulticanalRestringido(src, valor ->
+             (int)(k * 255.0 * Math.sin(Math.PI / 510.0 * valor))
+           );
   }
 
   public static BufferedImage brillo(BufferedImage src, double b) {
-    return aplicarMulticanal(src,
-        valor -> MathUtils.clamp(0, 255, (int)(
-            valor + b
-        )));
+    return aplicarMulticanalRestringido(src, valor ->
+             (int)(valor + b)
+           );
   }
 
   public static BufferedImage contraste(BufferedImage src, double a) {
-    return aplicarMulticanal(src,
-        valor -> MathUtils.clamp(0, 255, (int)(
-            valor * a
-        )));
+    return aplicarMulticanal(src, valor ->
+             (int)(valor * a)
+           );
   }
 
   public static BufferedImage sigmoide(BufferedImage src, double a) {
-    return aplicarMulticanal(src,
-        valor -> MathUtils.clamp(0, 255, (int)(
-            127.5 * (1 + Math.tanh(a * (valor - 127.5)))
-        )));
+    return aplicarMulticanalRestringido(src, valor ->
+             (int)(127.5 * (1 + Math.tanh(a * (valor - 127.5)))
+           ));
   }
 
   public static BufferedImage diferencias(BufferedImage src, int umbral) {
@@ -174,10 +174,18 @@ public class OperadoresPunto {
   public static BufferedImage separarRGB(BufferedImage src, int umbral) {
     int resultado[] = new int[1];
     return aplicar(src, canales -> {
-      int dif = canales[0] + canales[1] + canales[2];
-      resultado[0] = dif < umbral * 3 ? 0 : 255;
+      int suma = canales[0] + canales[1] + canales[2];
+      resultado[0] = suma < umbral * 3 ? 0 : 255;
       return resultado;
     }, BufferedImage.TYPE_BYTE_GRAY);
+  }
+
+  public static BufferedImage interseccion(BufferedImage src, BufferedImage src2) {
+    WritableRaster wr = src2.getRaster();
+    return aplicarMulticanal(src, (x, y, valor) -> {
+      int valor2 = wr.getSample(x, y, 0);
+      return valor == valor2 && valor == 255 ? 255 : 0;
+    });
   }
 
   public static BufferedImage diff(BufferedImage src, BufferedImage src2) {
@@ -188,22 +196,6 @@ public class OperadoresPunto {
     });
   }
 
-  public static BufferedImage constant(BufferedImage ref, int value) {
-    int valueArr[] = new int[]{value};
-    return OperadoresPunto.aplicar(ref,
-                                   vignore -> valueArr,
-                                   BufferedImage.TYPE_BYTE_GRAY);
-  }
-
-  public static BufferedImage white(BufferedImage ref) {
-    return constant(ref, 255);
-  }
-
-  public static BufferedImage black(BufferedImage ref) {
-    return constant(ref, 0);
-  }
-
   private OperadoresPunto() { }
-
 }
 

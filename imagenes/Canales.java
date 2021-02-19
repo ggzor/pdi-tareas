@@ -56,6 +56,39 @@ public class Canales {
     arr[2] = l;
   }
 
+	private static float hue2rgb(float p, float q, float t) {
+		if (t < 0) t += 1;
+		if (t > 1) t -= 1;
+
+		if (t < 1.0f/6.0f) return p + (q - p) * 6 * t;
+		if (t < 1.0f/2.0f) return q;
+		if (t < 2.0f/3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6;
+		return p;
+	}
+
+	public static void hslToRGB(float arr[]) {
+    float h = arr[0];
+    float s = arr[1];
+    float l = arr[2];
+
+    float r, g, b;
+
+		if (s == 0.0) {
+			r = g = b = l;
+		} else {
+			float q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+			float p = 2 * l - q;
+
+			r = hue2rgb(p, q, h + 1.0f/3.0f);
+			g = hue2rgb(p, q, h);
+			b = hue2rgb(p, q, h - 1.0f/3.0f);
+		}
+
+    arr[0] = r;
+    arr[1] = g;
+    arr[2] = b;
+  }
+
   public static void toHSV(float arr[]) {
     float r = arr[0];
     float g = arr[1];
@@ -107,6 +140,23 @@ public class Canales {
 
       return canales;
     }, img.getType());
+  }
+
+  public static BufferedImage umbralizacionHSLPorS(BufferedImage img, float umbral, float exp) {
+		float valores[] = new float[3];
+		int resultado[] = new int[1];
+
+    return OperadoresPunto.aplicar(img, canales -> {
+			valores[0] = canales[0];
+			valores[1] = canales[1];
+			valores[2] = canales[2];
+
+      toHSL(valores);
+
+			resultado[0] = Math.pow(valores[1], exp) < umbral ? 0 : 255;
+
+      return resultado;
+    }, BufferedImage.TYPE_BYTE_GRAY);
   }
 
   public static BufferedImage convertirHSV(BufferedImage img) {

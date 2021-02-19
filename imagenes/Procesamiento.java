@@ -1,21 +1,11 @@
 package imagenes;
 
 import java.awt.image.*;
-import java.util.function.*;
 
 /**
  * Clase principal para realizar el procesamiento de una imagen
  */
 public class Procesamiento {
-
-  /**
-   * Interfaz para representar una operación sobre una imagen por pixel
-   * */
-  @FunctionalInterface
-  public static interface OperadorPixel {
-    public void operar(int x, int y, int[] canales);
-  }
-
   /**
    * La función central de todas las operaciones que trabajan con imagenes
    * */
@@ -33,13 +23,17 @@ public class Procesamiento {
     }
   }
 
+  /**
+   * Crea una imagen con las dimensiones dadas y el tipo dado utilizando el
+   * generador especificado
+   * */
   public static BufferedImage
-    generarImagen(int ancho, int alto, int tipo, Consumer<int[]> generadorCanales) {
+    generarImagen(int ancho, int alto, int tipo, OperadorPixel generadorCanales) {
     BufferedImage resultado = new BufferedImage(ancho, alto, tipo);
     WritableRaster raster = resultado.getRaster();
 
     iterarPixeles(resultado, (x, y, canales) -> {
-      generadorCanales.accept(canales);
+      generadorCanales.operar(x, y, canales);
       raster.setPixel(x, y, canales);
     });
 
