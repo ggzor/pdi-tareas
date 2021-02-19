@@ -24,12 +24,12 @@ fi
 ARCHIVO="$1/Main.java"
 CLASE="$1.Main"
 CLASSPATH_EXTRA='./:lib/*'
-shift
 
 if [[ ! -f $ARCHIVO ]]; then
   echo "No existe la tarea $1 (aún?)"
   exit 1
 fi
+shift
 
 # Compilar
 find -type f -name '*.java' | xargs javac -cp "$CLASSPATH_EXTRA"
