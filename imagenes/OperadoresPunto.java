@@ -1,8 +1,8 @@
 package imagenes;
 
 import java.awt.image.*;
-import java.util.function.Function;
-import java.util.function.IntUnaryOperator;
+import java.util.*;
+import java.util.function.*;
 
 import utils.MathUtils;
 
@@ -194,6 +194,14 @@ public class OperadoresPunto {
       int valor2 = wr.getSample(x, y, 0);
       return Math.max(0, valor - valor2);
     });
+  }
+
+  public static BufferedImage recolorear(BufferedImage src, int original[], int destino[]) {
+    return aplicar(src, canales ->
+         (canales[0] == original[0] && canales[1] == original[1]
+                                    && canales[2] == original[2])
+         ? destino : canales,
+         src.getType());
   }
 
   private OperadoresPunto() { }
