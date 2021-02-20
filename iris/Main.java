@@ -12,7 +12,7 @@ import static imagenes.OperadoresPunto.*;
 
 public class Main {
   private static final int[] NEGRO = new int[] { 0, 0, 0 };
-  private static final int[] COLOR_FALSO = new int[] { 0, 69, 25 };
+  private static final int[] COLOR_FALSO = new int[] { 0, 176, 65 };
 
   public static BufferedImage procesarImagen(BufferedImage img) {
     BufferedImage mask1, img1, pestanas_finas, pupila, regiones_oscuras,
@@ -56,6 +56,10 @@ public class Main {
 
     Path origen = Paths.get(args[0]);
     Path destino = Paths.get(args[1]);
+
+    if (origen.toAbsolutePath().toString().equals(destino.toAbsolutePath().toString())) {
+      exitError("La carpeta de destino debe ser diferente a la de origen.");
+    }
 
     if (!Files.isDirectory(origen)) {
       exitError("La carpeta de origen no es un directorio o no existe: "
