@@ -44,5 +44,8 @@ var maskFinal = interseccion(maskHSL, maskRGB);
 // Generación de la imagen final
 var imgFinal = enmascarar(maskFinal, $imagen);
 
+var negro = Java.to([0.0, 176.0, 65.0], "int[]");
+var falso = Java.to([0.0, 0.0, 0.0], "int[]");
+
 // Lo que se muestra en pantalla
-imgFinal;
+recolorear(negro, imgFinal, falso);
