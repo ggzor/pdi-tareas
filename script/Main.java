@@ -58,8 +58,8 @@ public class Main extends JFrame {
 
   public Main() throws Exception {
     BufferedImage todasImagenes[] =
-      Files.list(Paths.get("resources/"))
-           .filter(p -> p.toString().endsWith("JPG"))
+      Files.list(Paths.get("operador_bordes_hd/"))
+           .filter(p -> p.toString().endsWith("jpg"))
            .map(p ->
                ImagenesIO.abrirImagen(p.toAbsolutePath().toFile())
                          .either(im -> im, err -> null))
