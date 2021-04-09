@@ -143,9 +143,8 @@ dist
 
 # Other
 seleccion
-resultados
-test
-resultados_test
+resultados*
+test*
 regionales
 laplace_sobel*
 operador_bordes_hd*

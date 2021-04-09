@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.function.*;
+import java.util.stream.IntStream;
 
 import reactive.ReactiveValueUtils.TriFunction;
 import utils.MathUtils;
@@ -172,6 +173,35 @@ public class OperadoresConvolucionales {
                    (x, y, i, im) -> 0.0,
                    (temp, x, kx, ky) -> temp + x * kernelSegOrdenRobinson90[ky][kx],
                    d -> 128 + d);
+  }
+
+  private static final double SIGMA_S = 2;
+  private static final double SIGMA_R = 51;
+  private static final int RADIO_KERNEL = (int)Math.ceil(2 * SIGMA_S);
+  private static final int TAM_KERNEL = RADIO_KERNEL * 2 + 1;
+  private static final int CENTRO = (TAM_KERNEL - 1) / 2;
+  private static final double[][] kernelEspacial = MathUtils.gauss2DKernel(TAM_KERNEL, (int)SIGMA_S);
+  private static final double[] kernelRango =
+    IntStream.range(0, 256)
+     .mapToDouble(i -> MathUtils.gauss1(i, SIGMA_R))
+     .toArray();
+
+  public static BufferedImage bilateral(BufferedImage img) {
+    return aplicar(
+        img,
+        TAM_KERNEL, TAM_KERNEL,
+        (x, y, i, im) -> new double[] { im.apply(x + CENTRO, y + CENTRO, i), 0.0, 0.0 },
+        (temp, x, kx, ky) -> {
+          double pesoEspacial = kernelEspacial[ky][kx];
+          double pesoRango = kernelRango[Math.abs((int)temp[0] - x)];
+          double peso = pesoEspacial * pesoRango;
+
+          temp[1] += peso * x;
+          temp[2] += peso;
+
+          return temp;
+        },
+        arr -> Math.floor(arr[1] / arr[2]));
   }
 
   private static final double[][] kernelBordesFHD = new double[][] {
