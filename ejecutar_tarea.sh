@@ -16,6 +16,8 @@ Ejecuta la tarea visor
 Tareas disponibles:
   - visor
   - script
+  - regionales
+  - otras
 EOF
 
   exit 1
@@ -32,7 +34,7 @@ fi
 shift
 
 # Compilar
-find -type f -name '*.java' | xargs javac -cp "$CLASSPATH_EXTRA"
+find -type f -name '*.java' | xargs javac -parameters -cp "$CLASSPATH_EXTRA"
 
 # Ejecutar
 java -cp "$CLASSPATH_EXTRA" "$CLASE" "$@"
