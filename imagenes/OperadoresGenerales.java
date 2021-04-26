@@ -34,18 +34,6 @@ public class OperadoresGenerales {
     return result;
   }
 
-  public static BufferedImage escaladoSimple(double factor, BufferedImage im) {
-    return im;
-  }
-
-  public static BufferedImage escaladoLineal(double factor, BufferedImage im) {
-    return im;
-  }
-
-  public static BufferedImage combinacionLineal(double alpha, BufferedImage im1, BufferedImage im2) {
-    return im1;
-  }
-
   public static BufferedImage multiplicar(BufferedImage mask, BufferedImage im) {
     return mezclar(im, mask, (x, y) -> (y / 255.0) * x);
   }
@@ -206,5 +194,149 @@ public class OperadoresGenerales {
     }
 
     return rotada;
+  }
+
+  private static double pendiente(int[] p1, int p2[]) {
+    // (y1 - y0) / (x1 - x0)
+    return (double) (p2[1] - p1[1]) / (p2[0] - p1[0]);
+  }
+
+  private static double calcularY(double m, int x, int y0) {
+    // m * (x - x0) + y0 = m * x + y0 por que x0 siempre es igual a 0
+    return m * x + y0;
+  }
+
+  private static void interpolarDireccion(int[] p1, int[] p2, WritableRaster raster, int incrX, int incrY, int factor) {
+    // Interpola los puntos que se encuentran entre p1 y p2
+    int x = 1;
+    int[] pAux = new int[] { p1[0] + incrX, p1[1] + incrY };
+    double m = 0;
+    int nCanales = raster.getNumBands();
+    int[] y0xCanal = new int[3];
+    int[] y1xCanal = new int[3];
+    int[] pixel = new int[3];
+    raster.getPixel(p1[0], p1[1], y0xCanal);
+    raster.getPixel(p2[0], p2[1], y1xCanal);
+
+    while (!Arrays.equals(p2, pAux)) {
+      for (int i = 0; i < nCanales; i++) {
+        m = pendiente(new int[] { 0, y0xCanal[i] }, new int[] { factor, y1xCanal[i] });
+        pixel[i] = (int) Math.floor(calcularY(m, x, y0xCanal[i]));
+      }
+
+      raster.setPixel(pAux[0], pAux[1], pixel);
+      x++;
+      pAux[0] += incrX;
+      pAux[1] += incrY;
+    }
+
+  }
+
+  private static void interpolarArea(int[] pivoteSupIzq, WritableRaster raster, int factor) {
+    // Caso base
+    if (factor <= 1)
+      return;
+
+    int[] sigPivote = new int[3];
+    int[] pivoteSupDer = new int[] { pivoteSupIzq[0] + factor, pivoteSupIzq[1] };
+    int[] pivoteInfIzq = new int[] { pivoteSupIzq[0], pivoteSupIzq[1] + factor };
+    int[] pivoteInfDer = new int[] { pivoteSupDer[0], pivoteInfIzq[1] };
+    int[][] interpolacionHorizontalSup = new int[][] { pivoteSupIzq, pivoteSupDer };
+    int[][] interpolacionHorizontalInf = new int[][] { pivoteInfIzq, pivoteInfDer };
+    int[][] interpolacionVerticalIzq = new int[][] { pivoteSupIzq, pivoteInfIzq };
+    int[][] interpolacionVerticalDer = new int[][] { pivoteSupDer, pivoteInfDer };
+    int[][] interpolacionDiagonal = new int[][] { pivoteSupIzq, pivoteInfDer };
+    int[][] interpolacionDiagonalInv = new int[][] { pivoteInfIzq, pivoteSupDer };
+
+    interpolarDireccion(interpolacionHorizontalSup[0], interpolacionHorizontalSup[1], raster, 1, 0, factor);
+    interpolarDireccion(interpolacionHorizontalInf[0], interpolacionHorizontalInf[1], raster, 1, 0, factor);
+
+    interpolarDireccion(interpolacionVerticalIzq[0], interpolacionVerticalIzq[1], raster, 0, 1, factor);
+    interpolarDireccion(interpolacionVerticalDer[0], interpolacionVerticalDer[1], raster, 0, 1, factor);
+
+    interpolarDireccion(interpolacionDiagonal[0], interpolacionDiagonal[1], raster, 1, 1, factor);
+    interpolarDireccion(interpolacionDiagonalInv[0], interpolacionDiagonalInv[1], raster, 1, -1, factor);
+
+    sigPivote[0] = pivoteSupIzq[0] + 1;
+    sigPivote[1] = pivoteSupIzq[1] + 1;
+    interpolarArea(sigPivote, raster, factor - 1);
+  }
+
+  public static BufferedImage escaladoInterpolacion(int factor, BufferedImage imagen) {
+    final int nuevoWidth = imagen.getWidth() * factor;
+    final int nuevoHeight = imagen.getHeight() * factor;
+
+    int[] pixel = new int[3];
+    BufferedImage nueva = new BufferedImage(nuevoWidth, nuevoHeight, imagen.getType());
+    WritableRaster rasterOriginal = imagen.getRaster();
+    WritableRaster rasterNueva = nueva.getRaster();
+
+    // Inicializar la nueva imagen con los valores pivote
+    for (int x = 0; x < imagen.getWidth(); x++) {
+      for (int y = 0; y < imagen.getHeight(); y++) {
+        rasterOriginal.getPixel(x, y, pixel);
+        rasterNueva.setPixel(x * factor, y * factor, pixel);
+      }
+    }
+
+    // Iterar sobre cada area(factor x factor) e intepolar los valores faltantes
+    for (int x = 0; x < nuevoWidth - factor; x += factor) {
+      for (int y = 0; y < nuevoHeight - factor; y += factor) {
+        interpolarArea(new int[] { x, y }, rasterNueva, factor);
+      }
+    }
+
+    return nueva;
+  }
+
+  public static BufferedImage fusionCombinacionLineal(double alfa, BufferedImage imagen1, BufferedImage imagen2) {
+    final double beta = 1.0 - alfa;
+
+    // Inicializacion de imagenes/raster
+    BufferedImage nueva = new BufferedImage(imagen1.getWidth(), imagen1.getHeight(), imagen1.getType());
+    WritableRaster raster1 = imagen1.getRaster();
+    WritableRaster raster2 = imagen2.getRaster();
+    WritableRaster rasterNueva = nueva.getRaster();
+    double[] pixel1 = new double[3];
+    double[] pixel2 = new double[3];
+
+    // Iteracion sobre cada pixel en ambas imagenes
+    for (int x = 0; x < imagen1.getWidth(); x++) {
+      for (int y = 0; y < imagen1.getHeight(); y++) {
+        raster1.getPixel(x, y, pixel1);
+        raster2.getPixel(x, y, pixel2);
+
+        rasterNueva.setPixel(x, y, new double[] { pixel1[0] * alfa + pixel2[0] * beta,
+            pixel1[1] * alfa + pixel2[1] * beta, pixel1[2] * alfa + pixel2[2] * beta });
+      }
+    }
+
+    return nueva;
+  }
+
+  public static BufferedImage escaladoSimple(int factor, BufferedImage imagen) {
+    final int widthEscalado = imagen.getWidth() * factor;
+    final int heightEscalado = imagen.getHeight() * factor;
+    BufferedImage nueva = new BufferedImage(widthEscalado, heightEscalado, imagen.getType());
+    WritableRaster originalRaster = imagen.getRaster();
+    WritableRaster raster = nueva.getRaster();
+    float[] pixelPivote = new float[3];
+
+    // Iterar sobre cada pixel de la imagen origianl
+    for (int x = 0; x < imagen.getWidth(); x++) {
+      for (int y = 0; y < imagen.getHeight(); y++) {
+        originalRaster.getPixel(x, y, pixelPivote);
+
+        // Duplicar el pixel dependiendo del factor
+        for (int rX = 0; rX < factor; rX++) {
+          for (int rY = 0; rY < factor; rY++) {
+            raster.setPixel(x * factor + rX, y * factor + rY, pixelPivote);
+          }
+        }
+
+      }
+    }
+
+    return nueva;
   }
 }

@@ -47,6 +47,13 @@ public class Main {
         } catch (NumberFormatException ex) {
           exitError(String.format("No se pudo leer el número de punto flotante: %s", arg));
         }
+      } else if (p.getType().equals(int.class)) {
+        try {
+          result[i] = Integer.parseInt(arg);
+
+        } catch (NumberFormatException ex) {
+          exitError(String.format("No se pudo leer el entero: %s", arg));
+        }
       }
     }
 
